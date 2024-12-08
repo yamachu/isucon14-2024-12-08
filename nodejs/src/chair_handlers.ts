@@ -108,6 +108,7 @@ export const chairPostCoordinate = async (ctx: Context<Environment>) => {
     return ctx.json({ recorded_at: location.created_at.getTime() }, 200);
   } catch (e) {
     await ctx.var.dbConn.rollback();
+    console.log(JSON.stringify(e));
     return ctx.text(`${e}`, 500);
   }
 };
