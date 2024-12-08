@@ -162,6 +162,7 @@ export const appGetRides = async (ctx: Context<Environment>) => {
   await ctx.var.dbConn.beginTransaction();
   const items: GetAppRidesResponseItem[] = [];
   try {
+    // ここN+1解決できる
     const [rides] = await ctx.var.dbConn.query<Array<Ride & RowDataPacket>>(
       "SELECT * FROM rides WHERE user_id = ? ORDER BY created_at DESC",
       [user.id],
@@ -246,6 +247,7 @@ export const appPostRides = async (ctx: Context<Environment>) => {
       [user.id],
     );
     let continuingRideCount = 0;
+    // ここも出来る
     for (const ride of rides) {
       const status = await getLatestRideStatus(ctx.var.dbConn, ride.id).then(
         (v) => v.status,
@@ -638,6 +640,7 @@ export const appGetNearbyChairs = async (ctx: Context<Environment>) => {
 
   await ctx.var.dbConn.beginTransaction();
   try {
+    // ここもいけるな…
     const [chairs] = await ctx.var.dbConn.query<Array<Chair & RowDataPacket>>(
       "SELECT * FROM chairs",
     );
