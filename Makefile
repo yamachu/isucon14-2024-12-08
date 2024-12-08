@@ -16,3 +16,11 @@ gh:
 mysql/client:
 	@mysql -h 127.0.0.1 -P 3306 -u isucon isuride -pisucon
 
+# echoを見せているのは、どんなクエリ投げたっけを見るためにしてる
+mysql/query: QUERY=
+mysql/query:
+	echo "$(QUERY)" | $(MAKE) mysql/client
+
+mysql/query/gh: QUERY=
+mysql/query/gh:
+	$(MAKE) mysql/query QUERY="$(QUERY)" | tee >(gh issue comment $(ISSUE) -F -)
