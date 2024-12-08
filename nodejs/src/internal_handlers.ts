@@ -2,6 +2,7 @@ import type { Context } from "hono";
 import type { Environment } from "./types/hono.js";
 import type { RowDataPacket } from "mysql2";
 import type { Chair, Ride } from "./types/models.js";
+import { flushLatestRideByChairId } from "./common.js";
 
 // このAPIをインスタンス内から一定間隔で叩かせることで、椅子とライドをマッチングさせる
 export const internalGetMatching = async (ctx: Context<Environment>) => {
@@ -39,6 +40,7 @@ export const internalGetMatching = async (ctx: Context<Environment>) => {
     matched.id,
     ride.id,
   ]);
+  flushLatestRideByChairId(matched.id);
 
   return ctx.body(null, 204);
 };

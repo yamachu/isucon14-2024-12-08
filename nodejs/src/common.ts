@@ -51,6 +51,29 @@ export const getLatestRideStatus = async (
   return rideStatus;
 };
 
+const latestRideByChairId = new Map<string, Ride>();
+export const flushLatestRideByChairId = (chairId: string): void => {
+  latestRideByChairId.delete(chairId);
+};
+
+export const clearOnMemoryLatest = () => {
+  latestRideByChairId.clear();
+};
+
+export const getLatestRideByChairId = async (
+  dbConn: Connection,
+  chairId: string,
+): Promise<Ride> => {
+  if (latestRideByChairId.has(chairId)) {
+    return latestRideByChairId.get(chairId)!;
+  }
+  const [[ride]] = await dbConn.query<Array<Ride & RowDataPacket>>(
+    "SELECT * FROM rides WHERE chair_id = ? ORDER BY created_at DESC",
+    [chairId],
+  );
+  return ride;
+};
+
 export class ErroredUpstream extends Error {
   constructor(message: string) {
     super(message);

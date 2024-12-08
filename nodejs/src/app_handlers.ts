@@ -343,6 +343,7 @@ export const appPostRides = async (ctx: Context<Environment>) => {
     );
   } catch (e) {
     await ctx.var.dbConn.rollback();
+    console.log(JSON.stringify(e));
     return ctx.text(`${e}`, 500);
   }
 };
