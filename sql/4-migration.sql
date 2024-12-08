@@ -78,3 +78,24 @@ ALTER TABLE users ADD INDEX idx_invitation_code (invitation_code);
 -- 	 SELECT rides.* FROM rides JOIN ride_statuses ON rides.id = ride_statuses.ride_id WHERE chair_id = ? AND status = 'COMPLETED' AND updated_at BETWEEN ? AND ? + INTERVAL 999 MICROSECOND
 -- end: could not determined index --
 -- end: auto generated add index --
+
+CREATE TABLE ride_statuses_latest (
+  ride_id VARCHAR(26)                                                                        NOT NULL PRIMARY KEY COMMENT 'ライドID',
+  status          ENUM ('MATCHING', 'ENROUTE', 'PICKUP', 'CARRYING', 'ARRIVED', 'COMPLETED') NOT NULL COMMENT '状態',
+);
+
+DELIMITER //
+
+CREATE TRIGGER after_insert_ride_statuses
+AFTER INSERT ON ride_statuses
+FOR EACH ROW
+BEGIN
+  INSERT INTO ride_statuses_latest (ride_id, status)
+  VALUES (NEW.ride_id, NEW.status)
+  ON DUPLICATE KEY UPDATE
+    ride_id = VALUES(ride_id),
+    status = VALUES(status);
+END //
+
+DELIMITER ;
+
