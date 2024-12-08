@@ -143,7 +143,8 @@ ON DUPLICATE KEY UPDATE
   chair_sent_at = VALUES(chair_sent_at);
 
 -- 1. chair_distancesテーブルの作成
-CREATE TABLE IF NOT EXISTS chair_distances (
+DROP TABLE IF EXISTS chair_distances;
+CREATE TABLE chair_distances (
   chair_id VARCHAR(26) NOT NULL PRIMARY KEY,
   total_distance DOUBLE NOT NULL DEFAULT 0,
   total_distance_updated_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6)
@@ -169,6 +170,7 @@ ON DUPLICATE KEY UPDATE
 -- 3. トリガーの作成
 DELIMITER //
 
+DROP TRIGGER IF EXISTS after_insert_chair_locations //
 CREATE TRIGGER after_insert_chair_locations
 AFTER INSERT ON chair_locations
 FOR EACH ROW
