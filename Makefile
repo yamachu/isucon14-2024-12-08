@@ -30,10 +30,10 @@ slowlog:
 	sudo truncate /var/log/mysql/mysql-slow.log --size 0
 
 sync/mysqld.cnf:
-	sudo cp ./mysqld.cnf /etc/mysql/conf.d/mysqld.cnf
+	sudo cp ./etc/mysqld.cnf /etc/mysql/conf.d/mysqld.cnf
 
 edit/my.cnf:
-	sudo vi /etc/mysql/conf.d/mysql.cnf
+	sudo vi /etc/mysql/conf.d/mysqld.cnf
 
 restart/mysql:
 	sudo systemctl restart mysql
