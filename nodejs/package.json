@@ -14,6 +14,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
+    "@pyroscope/nodejs": "^0.4.1",
     "@types/node": "^20.11.17",
     "@yamachu/sql-index-helper": "^1.0.0",
     "tsx": "^4.7.1"

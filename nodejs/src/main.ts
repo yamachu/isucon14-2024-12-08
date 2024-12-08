@@ -34,6 +34,8 @@ import { internalGetMatching } from "./internal_handlers.js";
 import { createPool } from "mysql2/promise";
 import { logger } from "hono/logger";
 
+import Pyroscope from "@pyroscope/nodejs";
+
 const pool = createPool({
   host: process.env.ISUCON_DB_HOST || "127.0.0.1",
   port: Number(process.env.ISUCON_DB_PORT || "3306"),
@@ -42,6 +44,13 @@ const pool = createPool({
   database: process.env.ISUCON_DB_NAME || "isuride",
   timezone: "+00:00",
 });
+
+// Tracing
+Pyroscope.init({
+  serverAddress: "http://localhost:4040",
+  appName: "isucon14",
+});
+Pyroscope.start();
 
 const app = new Hono<Environment>();
 app.use(logger());
