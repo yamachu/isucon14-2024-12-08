@@ -44,7 +44,7 @@ const latestRideStatus = new Map<string, RideStatus>();
 export const clearOnMemoryLatestRideStatus = () => {
   latestRideStatus.clear();
 };
-export const purgeOldRideStatus = (rideId: string) => {
+export const purgeOldRideStatus = async (rideId: string) => {
   latestRideStatus.delete(rideId);
 };
 
@@ -52,9 +52,8 @@ export const getLatestRideStatus = async (
   dbConn: Connection,
   rideId: string,
 ): Promise<RideStatus> => {
-  const maybe = latestRideStatus.get(rideId);
-  if (maybe) {
-    return maybe;
+  if (latestRideStatus.has(rideId)) {
+    return latestRideStatus.get(rideId)!;
   }
   const [[rideStatus]] = await dbConn.query<Array<RideStatus & RowDataPacket>>(
     "SELECT * FROM ride_statuses_latest WHERE ride_id = ?",
