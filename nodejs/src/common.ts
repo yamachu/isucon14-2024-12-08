@@ -40,14 +40,26 @@ export const calculateSale = (ride: Ride): number => {
   );
 };
 
+const latestRideStatus = new Map<string, RideStatus>();
+export const clearOnMemoryLatestRideStatus = () => {
+  latestRideStatus.clear();
+};
+export const purgeOldRideStatus = async (rideId: string) => {
+  latestRideStatus.delete(rideId);
+};
+
 export const getLatestRideStatus = async (
   dbConn: Connection,
   rideId: string,
 ): Promise<RideStatus> => {
+  if (latestRideStatus.has(rideId)) {
+    return latestRideStatus.get(rideId)!;
+  }
   const [[rideStatus]] = await dbConn.query<Array<RideStatus & RowDataPacket>>(
     "SELECT * FROM ride_statuses_latest WHERE ride_id = ?",
     [rideId],
   );
+  latestRideStatus.set(rideId, rideStatus);
   return rideStatus;
 };
 

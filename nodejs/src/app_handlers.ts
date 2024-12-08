@@ -26,6 +26,7 @@ import {
   FARE_PER_DISTANCE,
   getLatestRideStatus,
   INITIAL_FARE,
+  purgeOldRideStatus,
 } from "./common.js";
 import type { CountResult } from "./types/util.js";
 import { requestPaymentGatewayPostPayment } from "./payment_gateway.js";
@@ -334,6 +335,7 @@ export const appPostRides = async (ctx: Context<Environment>) => {
       reqJson.destination_coordinate.longitude,
     );
     await ctx.var.dbConn.commit();
+    purgeOldRideStatus(rideId);
     return ctx.json(
       {
         ride_id: rideId,
@@ -469,6 +471,7 @@ export const appPostRideEvaluatation = async (ctx: Context<Environment>) => {
       return ctx.text(`${err}`, 502);
     }
     await ctx.var.dbConn.commit();
+    purgeOldRideStatus(rideId);
     return ctx.json(
       {
         completed_at: ride.updated_at.getTime(),
@@ -575,6 +578,7 @@ export const appGetNotification = async (ctx: Context<Environment>) => {
     }
 
     await ctx.var.dbConn.commit();
+    purgeOldRideStatus(ride.id);
     return ctx.json(response, 200);
   } catch (e) {
     await ctx.var.dbConn.rollback();
