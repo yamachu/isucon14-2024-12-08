@@ -63,3 +63,4 @@ prebench:
 	sudo truncate /var/log/mysql/mysql-slow.log --size 0
 	sudo systemctl restart mysql
 	sudo systemctl restart isuride-node
+	sudo journalctl --vacuum-time=1s -u isuride-node
