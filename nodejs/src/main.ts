@@ -36,7 +36,6 @@ import { createPool } from "mysql2/promise";
 import { logger } from "hono/logger";
 
 import Pyroscope from "@pyroscope/nodejs";
-import { clearOnMemoryLatest } from "./common.js";
 
 const pool = createPool({
   host: process.env.ISUCON_DB_HOST || "127.0.0.1",
@@ -145,6 +144,5 @@ async function postInitialize(ctx: Context<Environment>) {
     return ctx.text(`Internal Server Error\n${error}`, 500);
   }
   clearOnMemories();
-  clearOnMemoryLatest();
   return ctx.json({ language: "node" });
 }
