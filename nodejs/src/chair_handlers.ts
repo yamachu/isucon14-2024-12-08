@@ -78,7 +78,9 @@ export const chairPostCoordinate = async (ctx: Context<Environment>) => {
       [chair.id],
     );
     if (ride) {
-      const status = await getLatestRideStatus(ctx.var.dbConn, ride.id);
+      const status = await getLatestRideStatus(ctx.var.dbConn, ride.id).then(
+        (v) => v.status,
+      );
       if (status !== "COMPLETED" && status !== "CANCELED") {
         if (
           reqJson.latitude === ride.pickup_latitude &&
@@ -123,22 +125,18 @@ export const chairGetNotification = async (ctx: Context<Environment>) => {
       return ctx.json({ retry_after_ms: 30 }, 200);
     }
 
-    const [[yetSentRideStatus]] = await ctx.var.dbConn.query<
-      Array<RideStatus & RowDataPacket>
-    >(
-      "SELECT * FROM ride_statuses_latest WHERE ride_id = ? AND chair_sent_at IS NULL",
-      [ride.id],
+    const yetSentRideStatus = await getLatestRideStatus(
+      ctx.var.dbConn,
+      ride.id,
     );
-    const status = yetSentRideStatus
-      ? yetSentRideStatus.status
-      : await getLatestRideStatus(ctx.var.dbConn, ride.id);
+    const status = yetSentRideStatus.status;
 
     const [[user]] = await ctx.var.dbConn.query<Array<User & RowDataPacket>>(
       "SELECT * FROM users WHERE id = ? FOR SHARE",
       [ride.user_id],
     );
 
-    if (yetSentRideStatus?.id) {
+    if ((yetSentRideStatus as any).chair_sent_at === null) {
       await ctx.var.dbConn.query(
         "UPDATE ride_statuses SET chair_sent_at = CURRENT_TIMESTAMP(6) WHERE id = ?",
         [yetSentRideStatus.id],
@@ -200,7 +198,9 @@ export const chairPostRideStatus = async (ctx: Context<Environment>) => {
         break;
       // After Picking up user
       case "CARRYING": {
-        const status = await getLatestRideStatus(ctx.var.dbConn, ride.id);
+        const status = await getLatestRideStatus(ctx.var.dbConn, ride.id).then(
+          (v) => v.status,
+        );
         if (status !== "PICKUP") {
           return ctx.text("chair has not arrived yet", 400);
         }

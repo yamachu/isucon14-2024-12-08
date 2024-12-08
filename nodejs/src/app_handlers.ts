@@ -167,7 +167,9 @@ export const appGetRides = async (ctx: Context<Environment>) => {
       [user.id],
     );
     for (const ride of rides) {
-      const status = await getLatestRideStatus(ctx.var.dbConn, ride.id);
+      const status = await getLatestRideStatus(ctx.var.dbConn, ride.id).then(
+        (v) => v.status,
+      );
       if (status !== "COMPLETED") {
         continue;
       }
@@ -245,7 +247,9 @@ export const appPostRides = async (ctx: Context<Environment>) => {
     );
     let continuingRideCount = 0;
     for (const ride of rides) {
-      const status = await getLatestRideStatus(ctx.var.dbConn, ride.id);
+      const status = await getLatestRideStatus(ctx.var.dbConn, ride.id).then(
+        (v) => v.status,
+      );
       if (status !== "COMPLETED") {
         continuingRideCount++;
       }
@@ -401,7 +405,9 @@ export const appPostRideEvaluatation = async (ctx: Context<Environment>) => {
     if (!ride) {
       return ctx.text("ride not found", 404);
     }
-    const status = await getLatestRideStatus(ctx.var.dbConn, ride.id);
+    const status = await getLatestRideStatus(ctx.var.dbConn, ride.id).then(
+      (v) => v.status,
+    );
     if (status !== "ARRIVED") {
       return ctx.text("not arrived yet", 400);
     }
@@ -511,15 +517,11 @@ export const appGetNotification = async (ctx: Context<Environment>) => {
     if (!ride) {
       return ctx.json({ retry_after_ms: 30 }, 200);
     }
-    const [[yetSentRideStatus]] = await ctx.var.dbConn.query<
-      Array<RideStatus & RowDataPacket>
-    >(
-      "SELECT * FROM ride_statuses_latest WHERE ride_id = ? AND app_sent_at IS NULL",
-      [ride.id],
+    const yetSentRideStatus = await getLatestRideStatus(
+      ctx.var.dbConn,
+      ride.id,
     );
-    const status = yetSentRideStatus
-      ? yetSentRideStatus.status
-      : await getLatestRideStatus(ctx.var.dbConn, ride.id);
+    const status = yetSentRideStatus.status;
 
     const fare = await calculateDiscountedFare(
       ctx.var.dbConn,
@@ -565,7 +567,7 @@ export const appGetNotification = async (ctx: Context<Environment>) => {
       };
     }
 
-    if (yetSentRideStatus?.id) {
+    if ((yetSentRideStatus as any).app_sent_at === null) {
       await ctx.var.dbConn.query(
         "UPDATE ride_statuses SET app_sent_at = CURRENT_TIMESTAMP(6) WHERE id = ?",
         [yetSentRideStatus.id],
@@ -679,7 +681,9 @@ export const appGetNearbyChairs = async (ctx: Context<Environment>) => {
       let skip = false;
       for (const ride of rides) {
         // 過去にライドが存在し、かつ、それが完了していない場合はスキップ
-        const status = await getLatestRideStatus(ctx.var.dbConn, ride.id);
+        const status = await getLatestRideStatus(ctx.var.dbConn, ride.id).then(
+          (v) => v.status,
+        );
         if (status !== "COMPLETED") {
           skip = true;
           break;
