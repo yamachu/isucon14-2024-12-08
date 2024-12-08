@@ -127,12 +127,17 @@ END //
 
 DELIMITER ;
 
-INSERT INTO ride_statuses_latest (ride_id, status)
-SELECT ride_id, status
+INSERT INTO ride_statuses_latest (id, ride_id, status, created_at, app_sent_at, chair_sent_at)
+SELECT id, ride_id, status, created_at, app_sent_at, chair_sent_at
 FROM (
-  SELECT ride_id, status, ROW_NUMBER() OVER (PARTITION BY ride_id ORDER BY created_at DESC) as rn
+  SELECT id, ride_id, status, created_at, app_sent_at, chair_sent_at,
+         ROW_NUMBER() OVER (PARTITION BY ride_id ORDER BY created_at DESC) as rn
   FROM ride_statuses
 ) sub
 WHERE rn = 1
 ON DUPLICATE KEY UPDATE
-  status = VALUES(status);
+  id = VALUES(id),
+  status = VALUES(status),
+  created_at = VALUES(created_at),
+  app_sent_at = VALUES(app_sent_at),
+  chair_sent_at = VALUES(chair_sent_at);
