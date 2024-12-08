@@ -210,7 +210,9 @@ DROP TABLE IF EXISTS latest_rides;
 CREATE TABLE latest_rides (
   chair_id VARCHAR(26) NOT NULL PRIMARY KEY,
   ride_id VARCHAR(26) NOT NULL,
-  user_id VARCHAR(26) NOT NULL
+  user_id VARCHAR(26) NOT NULL,
+  FOREIGN KEY (ride_id) REFERENCES rides(id),
+  FOREIGN KEY (user_id) REFERENCES users(id)
 );
 
 INSERT INTO latest_rides (chair_id, ride_id, user_id)
@@ -229,20 +231,16 @@ ON DUPLICATE KEY UPDATE
 
 DELIMITER //
 
-DROP TRIGGER IF EXISTS after_update_rides //
-CREATE TRIGGER after_update_rides
-AFTER UPDATE ON rides
+DROP TRIGGER IF EXISTS after_insert_rides //
+CREATE TRIGGER after_insert_rides
+AFTER INSERT ON rides
 FOR EACH ROW
 BEGIN
-  IF NEW.chair_id IS NOT NULL AND NEW.chair_id <> OLD.chair_id THEN
-    INSERT INTO latest_rides (chair_id, ride_id, user_id)
-    SELECT NEW.chair_id, NEW.id, NEW.user_id
-    FROM rides
-    WHERE rides.id = NEW.id
-    ON DUPLICATE KEY UPDATE
-      ride_id = VALUES(ride_id),
-      user_id = VALUES(user_id);
-  END IF;
+  INSERT INTO latest_rides (chair_id, ride_id, user_id)
+  VALUES (NEW.chair_id, NEW.id, NEW.user_id)
+  ON DUPLICATE KEY UPDATE
+    ride_id = VALUES(ride_id),
+    user_id = VALUES(user_id);
 END //
 
 DELIMITER ;
