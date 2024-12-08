@@ -64,7 +64,7 @@ ALTER TABLE rides ADD INDEX idx_user_id_created_at_desc (user_id, created_at des
 ALTER TABLE rides ADD INDEX idx_user_id (user_id);
 -- settings
 -- 	 SELECT value FROM settings WHERE name = 'payment_gateway_url'
-ALTER TABLE settings ADD INDEX idx_value_name (value, name);
+-- ALTER TABLE settings ADD INDEX idx_value_name (value, name);
 -- tmp
 -- 	 SELECT * FROM chairs INNER JOIN (SELECT id FROM chairs WHERE is_active = TRUE ORDER BY RAND() LIMIT 1) AS tmp ON chairs.id = tmp.id LIMIT 1
 -- ALTER TABLE tmp ADD INDEX idx_id (id);
