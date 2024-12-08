@@ -79,6 +79,7 @@ ALTER TABLE users ADD INDEX idx_invitation_code (invitation_code);
 -- end: could not determined index --
 -- end: auto generated add index --
 
+DROP TABLE IF EXISTS ride_statuses_latest;
 CREATE TABLE ride_statuses_latest (
   ride_id VARCHAR(26)                                                                        NOT NULL COMMENT 'ライドID',
   status          ENUM ('MATCHING', 'ENROUTE', 'PICKUP', 'CARRYING', 'ARRIVED', 'COMPLETED') NOT NULL COMMENT '状態'
@@ -86,6 +87,7 @@ CREATE TABLE ride_statuses_latest (
 
 DELIMITER //
 
+DROP TRIGGER IF EXISTS after_insert_ride_statuses //
 CREATE TRIGGER after_insert_ride_statuses
 AFTER INSERT ON ride_statuses
 FOR EACH ROW
