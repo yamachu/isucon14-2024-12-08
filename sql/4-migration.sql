@@ -185,8 +185,10 @@ BEGIN
   ORDER BY created_at DESC
   LIMIT 1, 1;
 
-  -- 新しい距離を計算
-  SET new_distance = ABS(NEW.latitude - last_latitude) + ABS(NEW.longitude - last_longitude);
+  -- 前回の位置情報が存在する場合、新しい距離を計算
+  IF last_latitude IS NOT NULL AND last_longitude IS NOT NULL THEN
+    SET new_distance = ABS(NEW.latitude - last_latitude) + ABS(NEW.longitude - last_longitude);
+  END IF;
 
   -- chair_distancesテーブルを更新
   INSERT INTO chair_distances (chair_id, total_distance, total_distance_updated_at)
