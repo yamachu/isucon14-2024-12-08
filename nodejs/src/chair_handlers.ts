@@ -128,11 +128,10 @@ export const chairGetNotification = async (ctx: Context<Environment>) => {
     >(
       `SELECT r.*, u.id as userid, u.firstname as firstname, u.lastname as lastname, rs.status AS latest_status, rs.id as status_id, rs.chair_sent_at as chair_sent_at
        FROM rides r
+       JOIN latest_rides lr ON r.id = lr.ride_id
        LEFT JOIN users u ON r.user_id = u.id
        LEFT JOIN ride_statuses_latest rs ON r.id = rs.ride_id
-       WHERE r.chair_id = ?
-       ORDER BY r.updated_at DESC
-       LIMIT 1`,
+       WHERE lr.chair_id = ?`,
       [chair.id],
     );
     const ride = result as any as Ride;
