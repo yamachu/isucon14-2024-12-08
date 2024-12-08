@@ -157,8 +157,8 @@ SELECT chair_id,
 FROM (
   SELECT chair_id,
          created_at,
-         ABS(latitude - LAG(latitude) OVER (PARTITION BY chair_id ORDER BY created_at)) +
-         ABS(longitude - LAG(longitude) OVER (PARTITION BY chair_id ORDER BY created_at)) AS distance
+         IFNULL(ABS(latitude - LAG(latitude) OVER (PARTITION BY chair_id ORDER BY created_at)), 0) +
+         IFNULL(ABS(longitude - LAG(longitude) OVER (PARTITION BY chair_id ORDER BY created_at)), 0) AS distance
   FROM chair_locations
 ) tmp
 GROUP BY chair_id
