@@ -187,15 +187,19 @@ BEGIN
 
   -- 前回の位置情報が存在する場合、新しい距離を計算
   IF last_latitude IS NOT NULL AND last_longitude IS NOT NULL THEN
-    SET new_distance = ABS(NEW.latitude - last_latitude) + ABS(NEW.longitude - last_longitude);
+    SET new_distance = IFNULL(ABS(NEW.latitude - last_latitude), ) + IFNULL(ABS(NEW.longitude - last_longitude), 0);
   END IF;
 
   -- chair_distancesテーブルを更新
   INSERT INTO chair_distances (chair_id, total_distance, total_distance_updated_at)
   VALUES (NEW.chair_id, new_distance, NEW.created_at)
   ON DUPLICATE KEY UPDATE
-    total_distance = total_distance + new_distance,
+    total_distance = IFNULL(total_distance, 0) + new_distance,
     total_distance_updated_at = NEW.created_at;
 END //
 
 DELIMITER ;
+
+UPDATE chair_distances
+SET total_distance = 0
+WHERE total_distance IS NULL;
