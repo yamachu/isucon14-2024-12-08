@@ -99,3 +99,12 @@ END //
 
 DELIMITER ;
 
+INSERT INTO ride_statuses_latest (ride_id, status)
+SELECT ride_id, status
+FROM (
+  SELECT ride_id, status, ROW_NUMBER() OVER (PARTITION BY ride_id ORDER BY created_at DESC) as rn
+  FROM ride_statuses
+) sub
+WHERE rn = 1
+ON DUPLICATE KEY UPDATE
+  status = VALUES(status);
