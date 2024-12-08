@@ -187,7 +187,7 @@ BEGIN
 
   -- 前回の位置情報が存在する場合、新しい距離を計算
   IF last_latitude IS NOT NULL AND last_longitude IS NOT NULL THEN
-    SET new_distance = IFNULL(ABS(NEW.latitude - last_latitude), ) + IFNULL(ABS(NEW.longitude - last_longitude), 0);
+    SET new_distance = IFNULL(ABS(NEW.latitude - last_latitude), 0) + IFNULL(ABS(NEW.longitude - last_longitude), 0);
   END IF;
 
   -- chair_distancesテーブルを更新
