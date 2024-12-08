@@ -57,3 +57,9 @@ jlog/go:
 
 jlog/node:
 	sudo journalctl -xu isuride-node
+
+prebench:
+	git pull origin main
+	sudo truncate /var/log/mysql/mysql-slow.log --size 0
+	sudo systemctl restart mysql
+	sudo systemctl restart isuride-node
