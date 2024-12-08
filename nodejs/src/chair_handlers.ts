@@ -2,7 +2,7 @@ import type { Context } from "hono";
 import { setCookie } from "hono/cookie";
 import type { RowDataPacket } from "mysql2";
 import { ulid } from "ulid";
-import { getLatestRideStatus, purgeOldRideStatus } from "./common.js";
+import { getLatestRideStatus } from "./common.js";
 import type { Environment } from "./types/hono.js";
 import type {
   ChairLocation,
@@ -105,7 +105,6 @@ export const chairPostCoordinate = async (ctx: Context<Environment>) => {
       }
     }
     await ctx.var.dbConn.commit();
-    purgeOldRideStatus(ride.id);
     return ctx.json({ recorded_at: location.created_at.getTime() }, 200);
   } catch (e) {
     await ctx.var.dbConn.rollback();
@@ -148,7 +147,6 @@ export const chairGetNotification = async (ctx: Context<Environment>) => {
     }
 
     await ctx.var.dbConn.commit();
-    purgeOldRideStatus(ride.id);
     return ctx.json(
       {
         data: {
@@ -219,7 +217,6 @@ export const chairPostRideStatus = async (ctx: Context<Environment>) => {
         return ctx.text("invalid status", 400);
     }
     await ctx.var.dbConn.commit();
-    purgeOldRideStatus(ride.id);
     return ctx.body(null, 204);
   } catch (e) {
     await ctx.var.dbConn.rollback();
