@@ -592,15 +592,40 @@ async function getChairStats(
   chairId: string,
 ): Promise<AppGetNotificationResponseChairStats> {
   const [rides] = await dbConn.query<Array<Ride & RowDataPacket>>(
-    "SELECT rides.* FROM rides JOIN ride_statues rs on rs.ride_id = rides.id WHERE chair_id = ? AND rs.status = 'COMPLETED'",
+    "SELECT * FROM rides WHERE chair_id = ? ORDER BY updated_at DESC",
     [chairId],
   );
 
   let totalRidesCount = 0;
   let totalEvaluation = 0.0;
   for (const ride of rides) {
-    totalRidesCount++;
-    totalEvaluation += ride.evaluation ?? 0;
+    const [rideStatuses] = await dbConn.query<
+      Array<RideStatus & RowDataPacket>
+    >("SELECT * FROM ride_statuses WHERE ride_id = ? ORDER BY created_at", [
+      ride.id,
+    ]);
+    let arrivedAt: Date | undefined;
+    let pickupedAt: Date | undefined;
+    let isCompleted = false;
+    for (const status of rideStatuses) {
+      if (status.status === "ARRIVED") {
+        arrivedAt = status.created_at;
+      } else if (status.status === "CARRYING") {
+        pickupedAt = status.created_at;
+      }
+      if (status.status === "COMPLETED") {
+        isCompleted = true;
+      }
+      if (!arrivedAt || !pickupedAt) {
+        continue;
+      }
+      if (!isCompleted) {
+        continue;
+      }
+
+      totalRidesCount++;
+      totalEvaluation += ride.evaluation ?? 0;
+    }
   }
   return {
     total_rides_count: totalRidesCount,
