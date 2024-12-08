@@ -2,7 +2,7 @@
 
 -- chair_locations
 -- 	 SELECT * FROM chair_locations WHERE chair_id = ? ORDER BY created_at DESC LIMIT 1
-ALTER TABLE chair_locations ADD INDEX idx_chair_id_created_at (chair_id, created_at);
+ALTER TABLE chair_locations ADD INDEX idx_chair_id_created_at (chair_id, created_at desc);
 -- 	 SELECT * FROM chair_locations WHERE id = ?
 -- ALTER TABLE chair_locations ADD INDEX idx_id (id);
 -- chairs
@@ -43,21 +43,22 @@ ALTER TABLE ride_statuses ADD INDEX idx_ride_id_chair_sent_at_created_at (ride_i
 -- 	 SELECT * FROM ride_statuses WHERE ride_id = ? ORDER BY created_at
 ALTER TABLE ride_statuses ADD INDEX idx_ride_id_created_at (ride_id, created_at);
 -- 	 SELECT status FROM ride_statuses WHERE ride_id = ? ORDER BY created_at DESC LIMIT 1
-ALTER TABLE ride_statuses ADD INDEX idx_status_ride_id_created_at (status, ride_id, created_at);
+ALTER TABLE ride_statuses ADD INDEX idx_status_ride_id_created_at (status, ride_id, created_at desc);
 -- rides
 -- 	 SELECT * FROM rides WHERE chair_id IS NULL ORDER BY created_at LIMIT 1
 -- 	 SELECT * FROM rides WHERE chair_id = ? ORDER BY created_at DESC
-ALTER TABLE rides ADD INDEX idx_chair_id_created_at (chair_id, created_at);
+ALTER TABLE rides ADD INDEX idx_chair_id_created_at (chair_id, created_at desc);
 -- 	 SELECT * FROM rides WHERE chair_id = ? ORDER BY updated_at DESC
 -- 	 SELECT * FROM rides WHERE chair_id = ? ORDER BY updated_at DESC LIMIT 1
-ALTER TABLE rides ADD INDEX idx_chair_id_updated_at (chair_id, updated_at);
+ALTER TABLE rides ADD INDEX idx_chair_id_updated_at (chair_id, updated_at desc);
 -- 	 SELECT * FROM rides WHERE id = ?
 -- 	 SELECT * FROM rides WHERE id = ? FOR UPDATE
 -- ALTER TABLE rides ADD INDEX idx_id (id);
 -- 	 SELECT * FROM rides WHERE user_id = ? ORDER BY created_at DESC
 -- 	 SELECT * FROM rides WHERE user_id = ? ORDER BY created_at ASC
 -- 	 SELECT * FROM rides WHERE user_id = ? ORDER BY created_at DESC LIMIT 1
-ALTER TABLE rides ADD INDEX idx_user_id_created_at (user_id, created_at);
+ALTER TABLE rides ADD INDEX idx_user_id_created_at (user_id, created_at desc);
+ALTER TABLE rides ADD INDEX idx_user_id_created_at_desc (user_id, created_at desc);
 -- 	 SELECT * FROM rides WHERE user_id = ?
 -- 	 SELECT COUNT(*) FROM rides WHERE user_id = ?
 ALTER TABLE rides ADD INDEX idx_user_id (user_id);
