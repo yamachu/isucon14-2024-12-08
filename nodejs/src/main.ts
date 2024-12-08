@@ -53,7 +53,14 @@ Pyroscope.init({
 Pyroscope.start();
 
 const app = new Hono<Environment>();
-app.use(logger());
+app.use(
+  logger((str, ...rest) => {
+    if (str.startsWith("GET /api/internal/matching")) {
+      return;
+    }
+    console.log(str, ...rest);
+  }),
+);
 app.use(
   createMiddleware<Environment>(async (ctx, next) => {
     const connection = await pool.getConnection();
