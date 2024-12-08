@@ -175,7 +175,7 @@ CREATE TRIGGER after_insert_chair_locations
 AFTER INSERT ON chair_locations
 FOR EACH ROW
 BEGIN
-  DECLARE new_distance DOUBLE;
+  DECLARE new_distance DOUBLE DEFAULT 0;
   DECLARE last_latitude DOUBLE;
   DECLARE last_longitude DOUBLE;
   DECLARE last_created_at DATETIME(6);
