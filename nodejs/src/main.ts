@@ -33,9 +33,9 @@ import type { Environment } from "./types/hono.js";
 import { execSync } from "node:child_process";
 import { internalGetMatching } from "./internal_handlers.js";
 import { createPool } from "mysql2/promise";
-import { logger } from "hono/logger";
+// import { logger } from "hono/logger";
 
-import Pyroscope from "@pyroscope/nodejs";
+// import Pyroscope from "@pyroscope/nodejs";
 
 const pool = createPool({
   host: process.env.ISUCON_DB_HOST || "127.0.0.1",
@@ -47,21 +47,21 @@ const pool = createPool({
 });
 
 // Tracing
-Pyroscope.init({
-  serverAddress: "http://localhost:4040",
-  appName: "isucon14",
-});
-Pyroscope.start();
+// Pyroscope.init({
+//   serverAddress: "http://localhost:4040",
+//   appName: "isucon14",
+// });
+// Pyroscope.start();
 
 const app = new Hono<Environment>();
-app.use(
-  logger((str, ...rest) => {
-    if (str.startsWith("GET /api/internal/matching")) {
-      return;
-    }
-    console.log(str, ...rest);
-  }),
-);
+// app.use(
+//   logger((str, ...rest) => {
+//     if (str.startsWith("GET /api/internal/matching")) {
+//       return;
+//     }
+//     console.log(str, ...rest);
+//   }),
+// );
 app.use(
   createMiddleware<Environment>(async (ctx, next) => {
     const connection = await pool.getConnection();
