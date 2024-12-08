@@ -81,8 +81,13 @@ ALTER TABLE users ADD INDEX idx_invitation_code (invitation_code);
 
 DROP TABLE IF EXISTS ride_statuses_latest;
 CREATE TABLE ride_statuses_latest (
+  id              VARCHAR(26)                                                                NOT NULL,
   ride_id VARCHAR(26)                                                                        NOT NULL COMMENT 'ライドID',
-  status          ENUM ('MATCHING', 'ENROUTE', 'PICKUP', 'CARRYING', 'ARRIVED', 'COMPLETED') NOT NULL COMMENT '状態'
+  status          ENUM ('MATCHING', 'ENROUTE', 'PICKUP', 'CARRYING', 'ARRIVED', 'COMPLETED') NOT NULL COMMENT '状態',
+  created_at      DATETIME(6)                                                                NOT NULL DEFAULT CURRENT_TIMESTAMP(6) COMMENT '状態変更日時',
+  app_sent_at     DATETIME(6)                                                                NULL COMMENT 'ユーザーへの状態通知日時',
+  chair_sent_at   DATETIME(6)                                                                NULL COMMENT '椅子への状態通知日時',
+  PRIMARY KEY (ride_id)
 );
 
 DELIMITER //
@@ -92,11 +97,32 @@ CREATE TRIGGER after_insert_ride_statuses
 AFTER INSERT ON ride_statuses
 FOR EACH ROW
 BEGIN
-  INSERT INTO ride_statuses_latest (ride_id, status)
-  VALUES (NEW.ride_id, NEW.status)
+  INSERT INTO ride_statuses_latest (id, ride_id, status, app_sent_at, chair_sent_at)
+  VALUES (NEW.id, NEW.ride_id, NEW.status, NULL, NULL)
   ON DUPLICATE KEY UPDATE
+    id = VALUES(id),
     ride_id = VALUES(ride_id),
-    status = VALUES(status);
+    status = VALUES(status),
+    app_sent_at = NULL,
+    chair_sent_at = NULL;
+END //
+
+DROP TRIGGER IF EXISTS after_update_ride_statuses //
+CREATE TRIGGER after_update_ride_statuses
+AFTER UPDATE ON ride_statuses
+FOR EACH ROW
+BEGIN
+  IF NEW.chair_sent_at <> OLD.chair_sent_at THEN
+    UPDATE ride_statuses_latest
+    SET chair_sent_at = NEW.chair_sent_at
+    WHERE id = NEW.id;
+  END IF;
+
+  IF NEW.app_sent_at <> OLD.app_sent_at THEN
+    UPDATE ride_statuses_latest
+    SET app_sent_at = NEW.app_sent_at
+    WHERE id = NEW.id;
+  END IF;
 END //
 
 DELIMITER ;

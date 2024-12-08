@@ -126,7 +126,7 @@ export const chairGetNotification = async (ctx: Context<Environment>) => {
     const [[yetSentRideStatus]] = await ctx.var.dbConn.query<
       Array<RideStatus & RowDataPacket>
     >(
-      "SELECT * FROM ride_statuses WHERE ride_id = ? AND chair_sent_at IS NULL ORDER BY created_at ASC LIMIT 1",
+      "SELECT * FROM ride_statuses_latest WHERE ride_id = ? AND chair_sent_at IS NULL",
       [ride.id],
     );
     const status = yetSentRideStatus
