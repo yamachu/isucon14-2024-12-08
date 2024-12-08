@@ -118,29 +118,31 @@ export const chairGetNotification = async (ctx: Context<Environment>) => {
 
   await ctx.var.dbConn.beginTransaction();
   try {
-    const [[ride]] = await ctx.var.dbConn.query<Array<Ride & RowDataPacket>>(
-      "SELECT * FROM rides WHERE chair_id = ? ORDER BY updated_at DESC LIMIT 1",
+    const [[result]] = await ctx.var.dbConn.query<
+      // @ts-ignore
+      Array<{
+        ride: Ride & RowDataPacket;
+        user: User & RowDataPacket;
+        status: string;
+      }>
+    >(
+      `SELECT r.*, u.id as userid, u.firstname as firstname, u.lastname as lastname, rs.status AS latest_status, rs.id as status_id, rs.chair_sent_at as chair_sent_at
+       FROM rides r
+       LEFT JOIN users u ON r.user_id = u.id
+       LEFT JOIN ride_statuses_latest rs ON r.id = rs.ride_id
+       WHERE r.chair_id = ?
+       ORDER BY r.updated_at DESC
+       LIMIT 1`,
       [chair.id],
     );
-    if (!ride) {
-      return ctx.json({ retry_after_ms: 30 }, 200);
-    }
+    const ride = result as any as Ride;
+    const user = result as any as User;
+    const status = (result as any).latest_status as string;
 
-    const yetSentRideStatus = await getLatestRideStatus(
-      ctx.var.dbConn,
-      ride.id,
-    );
-    const status = yetSentRideStatus.status;
-
-    const [[user]] = await ctx.var.dbConn.query<Array<User & RowDataPacket>>(
-      "SELECT * FROM users WHERE id = ? FOR SHARE",
-      [ride.user_id],
-    );
-
-    if ((yetSentRideStatus as any).chair_sent_at === null) {
+    if ((result as any).chair_sent_at === null) {
       await ctx.var.dbConn.query(
         "UPDATE ride_statuses SET chair_sent_at = CURRENT_TIMESTAMP(6) WHERE id = ?",
-        [yetSentRideStatus.id],
+        [(result as any).status_id],
       );
     }
 
@@ -150,7 +152,7 @@ export const chairGetNotification = async (ctx: Context<Environment>) => {
         data: {
           ride_id: ride.id,
           user: {
-            id: user.id,
+            id: (user as any).userid,
             name: `${user.firstname} ${user.lastname}`,
           },
           pickup_coordinate: {
