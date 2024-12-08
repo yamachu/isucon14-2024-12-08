@@ -24,3 +24,36 @@ mysql/query:
 mysql/query/gh: QUERY=
 mysql/query/gh:
 	$(MAKE) mysql/query QUERY="$(QUERY)" | tee >(gh issue comment $(ISSUE) -F -)
+
+slowlog:
+	pt-query-digest <(sudo cat /var/log/mysql/mysql-slow.log) | tee >(gh issue comment $(ISSUE) -F -)
+	sudo truncate /var/log/mysql/mysql-slow.log --size 0
+
+sync/mysqld.cnf:
+	sudo cp ./mysqld.cnf /etc/mysql/conf.d/mysqld.cnf
+
+edit/my.cnf:
+	sudo vi /etc/mysql/conf.d/mysql.cnf
+
+restart/mysql:
+	sudo systemctl restart mysql
+
+restart/go:
+	sudo systemctl restart isuride-go.service
+
+restart/node:
+	sudo systemctl restart isuride-node.service
+
+switch/go:
+	sudo systemctl disable --now isuride-node.service
+	sudo systemctl enable --now isuride-go.service
+
+switch/node:
+	sudo systemctl disable --now isuride-go.service
+	sudo systemctl enable --now isuride-node.service
+
+jlog/go:
+	sudo journalctl -xu isuride-go
+
+jlog/node:
+	sudo journalctl -xu isuride-node
