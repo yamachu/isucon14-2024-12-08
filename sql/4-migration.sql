@@ -80,8 +80,8 @@ ALTER TABLE users ADD INDEX idx_invitation_code (invitation_code);
 -- end: auto generated add index --
 
 CREATE TABLE ride_statuses_latest (
-  ride_id VARCHAR(26)                                                                        NOT NULL PRIMARY KEY COMMENT 'ライドID',
-  status          ENUM ('MATCHING', 'ENROUTE', 'PICKUP', 'CARRYING', 'ARRIVED', 'COMPLETED') NOT NULL COMMENT '状態',
+  ride_id VARCHAR(26)                                                                        NOT NULL COMMENT 'ライドID',
+  status          ENUM ('MATCHING', 'ENROUTE', 'PICKUP', 'CARRYING', 'ARRIVED', 'COMPLETED') NOT NULL COMMENT '状態'
 );
 
 DELIMITER //
