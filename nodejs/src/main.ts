@@ -21,6 +21,7 @@ import {
 import {
   appAuthMiddleware,
   chairAuthMiddleware,
+  clearOnMemories,
   ownerAuthMiddleware,
 } from "./middlewares.js";
 import {
@@ -142,5 +143,6 @@ async function postInitialize(ctx: Context<Environment>) {
   } catch (error) {
     return ctx.text(`Internal Server Error\n${error}`, 500);
   }
+  clearOnMemories();
   return ctx.json({ language: "node" });
 }
