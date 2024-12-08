@@ -141,3 +141,59 @@ ON DUPLICATE KEY UPDATE
   created_at = VALUES(created_at),
   app_sent_at = VALUES(app_sent_at),
   chair_sent_at = VALUES(chair_sent_at);
+
+-- 1. chair_distancesテーブルの作成
+CREATE TABLE IF NOT EXISTS chair_distances (
+  chair_id VARCHAR(26) NOT NULL PRIMARY KEY,
+  total_distance DOUBLE NOT NULL DEFAULT 0,
+  total_distance_updated_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6)
+);
+
+-- 2. 既存データの集計と挿入
+INSERT INTO chair_distances (chair_id, total_distance, total_distance_updated_at)
+SELECT chair_id,
+       SUM(IFNULL(distance, 0)) AS total_distance,
+       MAX(created_at) AS total_distance_updated_at
+FROM (
+  SELECT chair_id,
+         created_at,
+         ABS(latitude - LAG(latitude) OVER (PARTITION BY chair_id ORDER BY created_at)) +
+         ABS(longitude - LAG(longitude) OVER (PARTITION BY chair_id ORDER BY created_at)) AS distance
+  FROM chair_locations
+) tmp
+GROUP BY chair_id
+ON DUPLICATE KEY UPDATE
+  total_distance = VALUES(total_distance),
+  total_distance_updated_at = VALUES(total_distance_updated_at);
+
+-- 3. トリガーの作成
+DELIMITER //
+
+CREATE TRIGGER after_insert_chair_locations
+AFTER INSERT ON chair_locations
+FOR EACH ROW
+BEGIN
+  DECLARE new_distance DOUBLE;
+  DECLARE last_latitude DOUBLE;
+  DECLARE last_longitude DOUBLE;
+  DECLARE last_created_at DATETIME(6);
+
+  -- 前回の位置情報を取得
+  SELECT latitude, longitude, created_at INTO last_latitude, last_longitude, last_created_at
+  FROM chair_locations
+  WHERE chair_id = NEW.chair_id
+  ORDER BY created_at DESC
+  LIMIT 1, 1;
+
+  -- 新しい距離を計算
+  SET new_distance = ABS(NEW.latitude - last_latitude) + ABS(NEW.longitude - last_longitude);
+
+  -- chair_distancesテーブルを更新
+  INSERT INTO chair_distances (chair_id, total_distance, total_distance_updated_at)
+  VALUES (NEW.chair_id, new_distance, NEW.created_at)
+  ON DUPLICATE KEY UPDATE
+    total_distance = total_distance + new_distance,
+    total_distance_updated_at = NEW.created_at;
+END //
+
+DELIMITER ;
